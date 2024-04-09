@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Crédito PEC</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #EBE6D9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #EBE6D9;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #FD6156;
+            text-align: center;
+        }
+
+        .form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #FD6156;
+        }
+
+        input {
+            width: calc(100% - 12px);
+            padding: 6px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            color: white;
+            background-color: #FD6156;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #results {
+            background-color: #FFF;
+            padding: 20px;
+            border-radius: 5px;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #FD6156;
+            color: white;
+        }
+
+        td {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Simulador de Crédito PEC</h1>
+        <div class="form">
+            <label for="loanAmount">Valor del Préstamo:</label>
+            <input type="number" id="loanAmount" placeholder="Ingrese el valor del préstamo">
+            
+            <label for="loanTerm">Plazo del Crédito (meses):</label>
+            <input type="number" id="loanTerm" placeholder="Ingrese el plazo en meses">
+            
+            <label for="interestRate">Tasa de Interés Mensual (%):</label>
+            <input type="number" id="interestRate" placeholder="Ingrese la tasa de interés mensual">
+            
+            <button id="calculateButton">Calcular</button>
+        </div>
+        <div id="results"></div>
+        <div id="amortizationTable" style="display: none;">
+            <h2 style="color: #FD6156;">Tabla de Amortización</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cuota</th>
+                        <th>Pago a Capital</th>
+                        <th>Pago a Interés</th>
+                        <th>Saldo</th>
+                    </tr>
+                </thead>
+                <tbody id="amortizationBody"></tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        document.getElementById('calculateButton').addEventListener('click', function() {
+            var loanAmount = parseInt(document.getElementById('loanAmount').value);
+            var loanTerm = parseInt(document.getElementById('loanTerm').value);
+            var interestRate = parseFloat(document.getElementById('interestRate').value);
+
+            var monthlyInterestRate = interestRate / 100;
+            var monthlyPayment = Math.round((loanAmount * monthlyInterestRate) / (1 - Math.pow(1 + monthlyInterestRate, -loanTerm)));
+            var totalPayment = monthlyPayment * loanTerm;
+            var totalInterest = totalPayment - loanAmount;
+
+            var results = document.getElementById('results');
+            results.innerHTML = `
+                <h2>Resultados</h2>
+                <p>Valor de la Cuota Mensual: $${monthlyPayment.toLocaleString('es-CO')}</p>
+                <p>Valor Total a Pagar con Intereses: $${totalPayment.toLocaleString('es-CO')}</p>
+                <p>Valor Total de Intereses a Pagar: $${totalInterest.toLocaleString('es-CO')}</p>
+            `;
+
+            displayAmortizationTable(loanAmount, loanTerm, interestRate, monthlyPayment);
+        });
+
+        function displayAmortizationTable(loanAmount, loanTerm, interestRate, monthlyPayment) {
+            var tableBody = document.getElementById('amortizationBody');
+            tableBody.innerHTML = '';
+
+            var remainingBalance = loanAmount;
+            for (var i = 1; i <= loanTerm; i++) {
+                var interestPayment = Math.round(remainingBalance * (interestRate / 100));
+                var capitalPayment = monthlyPayment - interestPayment;
+                remainingBalance -= capitalPayment;
+
+                var row = `<tr>
+                    <td>${i}</td>
+                    <td>$${capitalPayment.toLocaleString('es-CO')}</td>
+                    <td>$${interestPayment.toLocaleString('es-CO')}</td>
+                    <td>$${remainingBalance.toLocaleString('es-CO')}</td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            }
+
+            document.getElementById('amortizationTable').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
